@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
+import { ChatCompletionCreateParamsNonStreaming } from 'openai/resources/chat/completions';
 
 @Injectable()
 export class OpenaiService {
@@ -8,8 +9,8 @@ export class OpenaiService {
         this.openAI = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     }
 
-    async complete(params: OpenAI.Chat.ChatCompletionCreateParamsNonStreaming): Promise<string> {
-        const completionParams: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
+    async complete(params: Omit<ChatCompletionCreateParamsNonStreaming, 'model'>): Promise<string> {
+        const completionParams: ChatCompletionCreateParamsNonStreaming = {
             model: 'gpt-3.5-turbo',
             ...params,
         };
