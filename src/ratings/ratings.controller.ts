@@ -41,22 +41,26 @@ export class RatingsController {
         return rating;
     }
 
+    @UseGuards(JwtAuthGuard)
     @Get(':id')
     async findOneById(@Param('id') id: string): Promise<Rating | null> {
         return this.ratingsService.findOneById(id);
     }
 
+    @UseGuards(JwtAuthGuard)
     @Patch(':id')
     async updateRating(@Param('id') id: string, @Body() rating: Rating): Promise<Rating | null> {
         return this.ratingsService.updateRating(id, rating);
     }
 
+    @UseGuards(JwtAuthGuard)
     @Delete(':id')
     async deleteRating(@Param('id') id: string): Promise<HttpStatus> {
         await this.ratingsService.delete(id);
         return HttpStatus.NO_CONTENT;
     }
 
+    @UseGuards(JwtAuthGuard)
     @Get('/average/:recipeId')
     async getAverageRatingForRecipe(@Param('recipeId') recipeId: string): Promise<number> {
         const averageRating = await this.ratingsService.calculateAverageRatingForRecipe(recipeId);

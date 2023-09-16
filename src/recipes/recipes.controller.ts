@@ -19,6 +19,7 @@ import { Prisma, Recipe } from '@prisma/client';
 import { CreateRecipePromptDto } from './dto/create-recipe-prompt.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('recipes')
 export class RecipesController {
     constructor(
@@ -26,7 +27,6 @@ export class RecipesController {
         private readonly openaiService: OpenaiService,
     ) {}
 
-    @UseGuards(JwtAuthGuard)
     @Post()
     async create(@Body() recipeDto: CreateRecipePromptDto, @Req() request): Promise<Recipe> {
         const userId = request.user.id;
