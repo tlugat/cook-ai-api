@@ -27,6 +27,16 @@ export class RecipesService {
         });
     }
 
+    async findAll(params: {
+        skip?: number;
+        take?: number;
+        cursor?: Prisma.RecipeWhereUniqueInput;
+        where?: Prisma.RecipeWhereInput;
+        orderBy?: Prisma.RecipeOrderByWithRelationInput;
+    }): Promise<Recipe[]> {
+        return this.prisma.recipe.findMany(params);
+    }
+
     async updateRecipe(id: string, data: Recipe): Promise<Recipe | null> {
         return this.prisma.recipe.update({
             where: {
