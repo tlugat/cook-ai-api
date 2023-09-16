@@ -11,15 +11,15 @@ import { PrismaService } from 'src/prisma.service';
 export const jwtSecret = 'zjP9h6ZI5LoSKCRj';
 
 @Module({
-  imports: [
-    PassportModule,
-    JwtModule.register({
-      secret: jwtSecret,
-      signOptions: { expiresIn: '5m' }, // e.g. 7d, 24h
-    }),
-    UsersModule,
-  ],
-  controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, PrismaService],
+    imports: [
+        PassportModule,
+        JwtModule.register({
+            secret: jwtSecret,
+            signOptions: { expiresIn: '15m' },
+        }),
+        UsersModule,
+    ],
+    controllers: [AuthController],
+    providers: [AuthService, JwtStrategy, PrismaService],
 })
 export class AuthModule {}

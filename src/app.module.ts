@@ -7,9 +7,10 @@ import { PrismaService } from './prisma.service';
 import { OpenaiModule } from './openai/openai.module';
 import { RecipesModule } from './recipes/recipes.module';
 import { RatingsModule } from './ratings/ratings.module';
+import { SidesModule } from './sides/sides.module';
 
 @Module({
-    imports: [AuthModule, UsersModule, OpenaiModule, RecipesModule, RatingsModule],
+    imports: [AuthModule, UsersModule, OpenaiModule, RecipesModule, RatingsModule, SidesModule],
     controllers: [AppController],
     providers: [AppService, PrismaService],
 })
