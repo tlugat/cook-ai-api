@@ -19,7 +19,9 @@ model User {
   updatedAt DateTime   @updatedAt
   role      Role       @default(BASIC)
   recipes   Recipe[]
-  comments  Comments[]
+  comments  Comment[]
+  Rating    Rating[]
+  Favorite  Favorite[]
 
   @@map("users")
 }
@@ -31,18 +33,18 @@ model Auth {
 }
 
 model Recipe {
-  id          String      @id @default(uuid())
+  id          String     @id @default(uuid())
   title       String
-  description String      @db.Text
-  createdAt   DateTime    @default(now())
-  author      User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  description String     @db.Text
+  createdAt   DateTime   @default(now())
+  author      User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId    String
   season      String
-  comments    Comments[]
-  favorites   Favorites[]
-  ratings     Ratings[]
-  steps       String      @db.Text
-  ingredients String      @db.Text
+  comments    Comment[]
+  favorites   Favorite[]
+  ratings     Rating[]
+  steps       String     @db.Text
+  ingredients String     @db.Text
   duration    Int
   difficulty  String
 
@@ -50,7 +52,7 @@ model Recipe {
   @@map("recipes")
 }
 
-model Comments {
+model Comment {
   id        String   @id @default(uuid())
   content   String
   createdAt DateTime @default(now())
@@ -64,22 +66,30 @@ model Comments {
   @@map("comments")
 }
 
-model Favorites {
+model Favorite {
   id       String @id @default(uuid())
   recipe   Recipe @relation(fields: [recipeId], references: [id])
   recipeId String
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String
 
+  @@unique([userId, recipeId])
+  @@index([userId])
   @@index([recipeId])
   @@map("favorites")
 }
 
-model Ratings {
+model Rating {
   id       String @id @default(uuid())
   recipe   Recipe @relation(fields: [recipeId], references: [id])
   recipeId String
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String
   rating   Int
 
+  @@unique([userId, recipeId])
   @@index([recipeId])
+  @@index([userId])
   @@map("ratings")
 }
 

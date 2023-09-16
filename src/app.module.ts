@@ -6,9 +6,10 @@ import { UsersModule } from './users/users.module';
 import { PrismaService } from './prisma.service';
 import { OpenaiModule } from './openai/openai.module';
 import { RecipesModule } from './recipes/recipes.module';
+import { RatingsModule } from './ratings/ratings.module';
 
 @Module({
-    imports: [AuthModule, UsersModule, OpenaiModule, RecipesModule],
+    imports: [AuthModule, UsersModule, OpenaiModule, RecipesModule, RatingsModule],
     controllers: [AppController],
     providers: [AppService, PrismaService],
 })
