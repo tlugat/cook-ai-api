@@ -1,8 +1,21 @@
-import { Body, Controller, HttpException, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpException,
+    HttpStatus,
+    Param,
+    Patch,
+    Post,
+    Query,
+    Req,
+    UseGuards,
+} from '@nestjs/common';
 import { RecipesService } from './recipes.service';
 import { OpenaiService } from 'src/openai/openai.service';
 import { ChatCompletionMessageParam } from 'openai/resources/chat';
-import { Recipe } from '@prisma/client';
+import { Prisma, Recipe } from '@prisma/client';
 import { CreateRecipePromptDto } from './dto/create-recipe-prompt.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
@@ -49,5 +62,28 @@ export class RecipesController {
         });
 
         return recipe;
+    }
+
+    @Get(':id')
+    async findOneById(@Param('id') id: string): Promise<Recipe | null> {
+        return this.recipesService.findOneById(id);
+    }
+
+    @Get('find')
+    async findOne(@Query() params: Prisma.RecipeWhereUniqueInput): Promise<Recipe | null> {
+        return this.recipesService.findOne(params);
+    }
+
+    @Patch(':id')
+    async updateRecipe(
+        @Param('id') id: string,
+        @Body() updatedRecipe: Recipe,
+    ): Promise<Recipe | null> {
+        return this.recipesService.updateRecipe(id, updatedRecipe);
+    }
+
+    @Delete(':id')
+    async deleteRecipe(@Param('id') id: string): Promise<Recipe | null> {
+        return this.recipesService.delete(id);
     }
 }
