@@ -21,7 +21,7 @@ export class RecipesService {
         });
     }
 
-    async findOne(params: Prisma.RecipeFindUniqueArgs['where']): Promise<Recipe | null> {
+    async findOne(params: Prisma.RecipeWhereUniqueInput): Promise<Recipe | null> {
         return this.prisma.recipe.findUnique({
             where: params,
         });
