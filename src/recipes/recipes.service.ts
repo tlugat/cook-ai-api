@@ -37,7 +37,7 @@ export class RecipesService {
         return this.prisma.recipe.findMany(params);
     }
 
-    async updateRecipe(id: string, data: Recipe): Promise<Recipe | null> {
+    async update(id: string, data: Recipe): Promise<Recipe | null> {
         return this.prisma.recipe.update({
             where: {
                 id,

@@ -79,7 +79,7 @@ export class RecipesController {
         @Param('id') id: string,
         @Body() updatedRecipe: Recipe,
     ): Promise<Recipe | null> {
-        return this.recipesService.updateRecipe(id, updatedRecipe);
+        return this.recipesService.update(id, updatedRecipe);
     }
 
     @Delete(':id')
