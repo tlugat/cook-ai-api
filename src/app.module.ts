@@ -9,7 +9,7 @@ import { RecipesModule } from './recipes/recipes.module';
 import { RatingsModule } from './ratings/ratings.module';
 import { SidesModule } from './sides/sides.module';
 import { FavoritesModule } from './favorites/favorites.module';
-
+import { RecommendationsModule } from './recommendations/recommendations.module';
 @Module({
     imports: [
         AuthModule,
@@ -19,6 +19,7 @@ import { FavoritesModule } from './favorites/favorites.module';
         RatingsModule,
         SidesModule,
         FavoritesModule,
+        RecommendationsModule,
     ],
     controllers: [AppController],
     providers: [AppService, PrismaService],
