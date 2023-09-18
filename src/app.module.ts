@@ -8,9 +8,18 @@ import { OpenaiModule } from './openai/openai.module';
 import { RecipesModule } from './recipes/recipes.module';
 import { RatingsModule } from './ratings/ratings.module';
 import { SidesModule } from './sides/sides.module';
+import { FavoritesModule } from './favorites/favorites.module';
 
 @Module({
-    imports: [AuthModule, UsersModule, OpenaiModule, RecipesModule, RatingsModule, SidesModule],
+    imports: [
+        AuthModule,
+        UsersModule,
+        OpenaiModule,
+        RecipesModule,
+        RatingsModule,
+        SidesModule,
+        FavoritesModule,
+    ],
     controllers: [AppController],
     providers: [AppService, PrismaService],
 })
