@@ -29,12 +29,17 @@ export class RecipesController {
 
     @Post()
     async create(@Body() recipeDto: CreateRecipePromptDto, @Req() request): Promise<Recipe> {
-        const userId = request.user.id;
-
+        const user = request.user;
+        const userFoodPreferencesPrompt = `
+        You should definitely consider the following food preferences if they are relevant: ${user.foodPreferences}
+        `;
+        const systemMessageContent =
+            "You're an AI that users will request to help them create delicious recipes with a nice title, for every request you will send a JSON object following this format {title:'',description:'',ingredients:[{name:'',quantity:'',unit:''}],steps:[{order: '',content:'',}],duration:0,difficulty:'Facile'|'Normale'|'Difficile',season:'Été'|'Automne'|'Printemps|'Hiver'}. If any user ask about something other than recipes your response will always be {\"error\": \"wrong prompt\"}.";
         const SYSTEM_MESSAGE: ChatCompletionMessageParam = {
             role: 'system',
-            content:
-                "You're an AI that users will request to help them create delicious recipes with a nice title, for every request you will send a JSON object following this format {title:'',description:'',ingredients:[{name:'',quantity:'',unit:''}],steps:[{order: '',content:'',}],duration:0,difficulty:'Facile'|'Normale'|'Difficile',season:'Été'|'Automne'|'Printemps|'Hiver'}. If any user ask about something other than recipes your response will always be {\"error\": \"wrong prompt\"}",
+            content: user.foodPreferences
+                ? systemMessageContent + userFoodPreferencesPrompt
+                : systemMessageContent,
         };
         const messages: ChatCompletionMessageParam[] = [
             SYSTEM_MESSAGE,
@@ -58,7 +63,7 @@ export class RecipesController {
             duration,
             difficulty,
             season,
-            authorId: userId,
+            authorId: user.id,
         });
 
         return recipe;
