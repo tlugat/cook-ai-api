@@ -10,6 +10,7 @@ import { RatingsModule } from './ratings/ratings.module';
 import { SidesModule } from './sides/sides.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
+import { CommentsModule } from './comments/comments.module';
 @Module({
     imports: [
         AuthModule,
@@ -17,6 +18,7 @@ import { RecommendationsModule } from './recommendations/recommendations.module'
         OpenaiModule,
         RecipesModule,
         RatingsModule,
+        CommentsModule,
         SidesModule,
         FavoritesModule,
         RecommendationsModule,

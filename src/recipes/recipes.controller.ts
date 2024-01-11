@@ -34,7 +34,7 @@ export class RecipesController {
         You should definitely consider the following food preferences if they are relevant: ${user.foodPreferences}
         `;
         const systemMessageContent =
-            "You're an AI that users will request to help them create delicious recipes with a nice title, for every request you will send a JSON object following this format {title:'',description:'',ingredients:[{name:'',quantity:'',unit:''}],steps:[{order: '',content:'',}],duration:0,difficulty:'Facile'|'Normale'|'Difficile',season:'Été'|'Automne'|'Printemps|'Hiver'}. If any user ask about something other than recipes your response will always be {\"error\": \"wrong prompt\"}.";
+            "You're an AI that users will request to help them create delicious recipes with a nice title, for every request you will send a JSON object following this format {title:'',description:'',ingredients:[{name:'',quantity:'',unit:''}],steps:[{order: '',content:'',}],duration:0,difficulty:'Facile'|'Normale'|'Difficile',season:'Été'|'Automne'|'Printemps|'Hiver'}. If any user ask about something other than recipes or food your response will always be {\"error\": \"wrong prompt\"}.";
         const SYSTEM_MESSAGE: ChatCompletionMessageParam = {
             role: 'system',
             content: user.foodPreferences
@@ -69,6 +69,67 @@ export class RecipesController {
         return recipe;
     }
 
+    @Get('search')
+    async IntelligentSearch(
+        @Query()
+        params: {
+            skip?: number;
+            take?: number;
+            cursor?: Prisma.RecipeWhereUniqueInput;
+            where?: Prisma.RecipeWhereInput;
+            orderBy?: Prisma.RecipeOrderByWithRelationInput;
+            search?: string;
+        },
+        @Req() request,
+    ): Promise<Recipe[]> {
+        const { search, ...p } = params;
+        const recipes = await this.recipesService.findAll(p);
+        const recipesTitles = recipes.map((recipe) => recipe.title);
+        const user = request.user;
+        const userFoodPreferencesPrompt = `
+        You should definitely consider the following food preferences if they are relevant: ${user.foodPreferences}
+        `;
+        const systemMessageContent =
+            "I will send you a JSON object containing a 'search' string and a list of recipe titles. Your task is to analyze each recipe title and return only the relevant ones based on the provided search string, sorted by a decimal heat index between 0 and 1. For every request, you should always respond with a JSON object in the following format: {results: [{title:'', indicator:decimal}]}. If there are no relevant results, please return an empty array in results.";
+
+        const content = {
+            search,
+            recipes: recipesTitles,
+        };
+        const SYSTEM_MESSAGE: ChatCompletionMessageParam = {
+            role: 'system',
+            content: user.foodPreferences
+                ? systemMessageContent + userFoodPreferencesPrompt
+                : systemMessageContent,
+        };
+        const messages: ChatCompletionMessageParam[] = [
+            SYSTEM_MESSAGE,
+            { role: 'user', content: JSON.stringify(content) },
+        ];
+        const gptResponse = await this.openaiService.complete({ messages });
+        const gptResponseJSON = JSON.parse(gptResponse);
+
+        if (gptResponseJSON.error) {
+            throw new HttpException(gptResponseJSON.error, HttpStatus.BAD_REQUEST);
+        }
+        console.log(gptResponseJSON);
+        if ('results' in gptResponseJSON === false) {
+            return [];
+        }
+
+        const { results } = gptResponseJSON;
+
+        const sortedRecipes = recipes
+            .filter((recipe) => results.some((r) => r.title === recipe.title))
+            .map((recipe) => {
+                const indicator = results.find((r) => r.title === recipe.title).indicator;
+                return { ...recipe, indicator };
+            })
+            .sort((a, b) => b.indicator - a.indicator);
+
+        return sortedRecipes;
+    }
+
     @Get(':id')
     async findOneById(@Param('id') id: string): Promise<Recipe | null> {
         return this.recipesService.findOneById(id);
@@ -77,6 +138,20 @@ export class RecipesController {
     @Get('find')
     async findOne(@Query() params: Prisma.RecipeWhereUniqueInput): Promise<Recipe | null> {
         return this.recipesService.findOne(params);
+    }
+
+    @Get()
+    async findAll(
+        @Query()
+        params: {
+            skip?: number;
+            take?: number;
+            cursor?: Prisma.RecipeWhereUniqueInput;
+            where?: Prisma.RecipeWhereInput;
+            orderBy?: Prisma.RecipeOrderByWithRelationInput;
+        },
+    ): Promise<Recipe[]> {
+        return this.recipesService.findAll(params);
     }
 
     @Patch(':id')
