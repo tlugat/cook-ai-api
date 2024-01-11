@@ -33,6 +33,7 @@ export class RecipesService {
         cursor?: Prisma.RecipeWhereUniqueInput;
         where?: Prisma.RecipeWhereInput;
         orderBy?: Prisma.RecipeOrderByWithRelationInput;
+        select?: Prisma.RecipeSelect;
     }): Promise<Recipe[]> {
         return this.prisma.recipe.findMany(params);
     }
