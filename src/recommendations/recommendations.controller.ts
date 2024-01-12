@@ -15,6 +15,7 @@ import { OpenaiService } from 'src/openai/openai.service';
 import { CreateRecommendationsDto } from './dto/create-recommendations.dto';
 import { RecipesService } from 'src/recipes/recipes.service';
 import { Prisma, Recipe } from '@prisma/client';
+import { getCurrentSeason } from 'src/utils/helpers';
 
 @UseGuards(JwtAuthGuard)
 @Controller('recommendations')
@@ -66,21 +67,30 @@ export class RecommendationsController {
         console.log('in');
         const { recipeId, ...p } = params;
         const recipes = await this.recipesService.findAll(p);
-        const recipesTitles = recipes
+        const recipesForGpt = recipes
             .filter((recipe) => recipe.id !== recipeId)
-            .map((recipe) => recipe.title);
+            .map((recipe) => ({ title: recipe.title, season: recipe.season }));
 
         const recipe = recipes.find((recipe) => recipe.id === recipeId);
+        const currentSeason = getCurrentSeason();
         const user = request.user;
         const userFoodPreferencesPrompt = `
         You should definitely consider the following food preferences if they are relevant: ${user.foodPreferences}
         `;
-        const systemMessageContent =
-            "I will send you a JSON object containing a recipe and a list of recipe titles. Your task is to analyze each recipe title and return only the three relevant ones based on the provided search string, sorted by a decimal heat index between 0 and 1. For every request, you should always respond with a JSON object in the following format: {results: [{title:'', indicator:decimal}]}. If there are no relevant results, please return an empty array in results.";
+        const systemMessageContent = `
+        When you receive a JSON object containing a specific recipe, the current season, and a list of recipe objects (each with a title and its respective season), 
+        your task is to conduct a thorough and nuanced analysis of this list. Focus on identifying and selecting the three recipes that are most closely related to the provided recipe and are appropriate for the current season. 
+        Use advanced natural language processing and similarity comparison techniques to evaluate the connection between the given recipe and each recipe in the list, taking into account factors such as ingredients, cuisine style, and preparation methods.
+        The response should be structured as a JSON object in the format: {results: [{title: string, indicator: decimal}]}, where 'indicator' is a decimal value ranging from 0 to 1. 
+        This value should reflect the degree of relevance each recipe has to the provided recipe, as well as its suitability for the current season. 
+        The 'heat index' calculation should intelligently assess similarities in ingredients, culinary techniques, and seasonal appropriateness.
+        Return only the top three recipes that have the highest relevance scores, sorted by their 'heat index.' In the event that fewer than three recipes meet the criteria, return only those that qualify. 
+        If no recipes are relevant, provide an empty array []. It's crucial to maintain the specified response format consistently for all requests to ensure predictable and reliable outcomes`;
 
         const content = {
             recipe,
-            recipes: recipesTitles,
+            recipes: recipesForGpt,
+            season: currentSeason,
         };
         const SYSTEM_MESSAGE: ChatCompletionMessageParam = {
             role: 'system',
@@ -98,13 +108,13 @@ export class RecommendationsController {
         if (gptResponseJSON.error) {
             throw new HttpException(gptResponseJSON.error, HttpStatus.BAD_REQUEST);
         }
-        console.log(gptResponseJSON);
+
         if ('results' in gptResponseJSON === false) {
             return [];
         }
 
         const { results } = gptResponseJSON;
-
+        console.log(results);
         const sortedRecipes = recipes
             .filter((recipe) => results.some((r) => r.title === recipe.title))
             .map((recipe) => {
